@@ -56,7 +56,7 @@ class Util {
             if (typeof value != 'string') return value
 
             // Stringified function? (Not recommended)
-            return (value.substring(0, 8) == 'function' || value.includes(") => {")) ? eval('(' + value + ')') : value
+            return (value.substring(0, 8) == 'function' || value.includes("=>")) ? eval('(' + value + ')') : value
         })
     }
 }
