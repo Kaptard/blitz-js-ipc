@@ -12,6 +12,17 @@ const chalk = require("chalk")
  */
 class Util {
 
+
+    /**
+     * Set up uncaughtException listener for each worker
+     */
+    constructor() {
+        process.on('uncaughtException', function (err) {
+            console.error('Uncaught exception: ' + err)
+        })
+    }
+
+
     /**
      * Create Interface for global blitz object on parent and child
      */
