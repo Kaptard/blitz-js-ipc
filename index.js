@@ -1,5 +1,3 @@
-"use strict"
-
 /**
  * Dependencies
  */
@@ -17,8 +15,19 @@ class Util {
      * Set up uncaughtException listener for each worker
      */
     constructor() {
-        process.on('uncaughtException', function (err) {
-            console.error('Uncaught exception: ' + err)
+        process.on('uncaughtException', err => {
+            if (blitz.config.local.environment.toLowerCase() === "production") {
+                console.error(err)
+            } else {
+                throw err
+            }
+        })
+        process.on("unhandledRejection", err => {
+            if (blitz.config.local.environment.toLowerCase() === "production") {
+                console.error(err)
+            } else {
+                throw err
+            }
         })
     }
 
@@ -26,7 +35,7 @@ class Util {
     /**
      * Create Interface for global blitz object on parent and child
      */
-    connect(node) {
+    expose(node) {
         return new Promise((resolve, reject) => {
             process.on("message", msg => {
 
@@ -63,11 +72,18 @@ class Util {
      * Deserialize objects received via stdin from parent
      */
     deserialize(obj) {
-        return CircularJSON.parse(obj, function(key, value) {
+        return CircularJSON.parse(obj, (key, value) => {
             if (typeof value != 'string') return value
 
             // Stringified function? (Not recommended)
-            return (value.substring(0, 8) == 'function' || value.includes("=>")) ? eval('(' + value + ')') : value
+            if (value.substring(0, 8) == 'function' || value.includes(" => ")) {
+                return eval("(" + value + ")")
+            }
+
+            // Primitive datatype
+            else {
+                return value
+            }
         })
     }
 }
