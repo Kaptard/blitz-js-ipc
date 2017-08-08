@@ -33,13 +33,11 @@ class Util {
 
 
     /**
-     * Create Interface for global blitz object on parent and child
+     * Listen for global blitz config object
      */
-    expose(node) {
-        return new Promise((resolve, reject) => {
+    setGlobal() {
+        return new Promise(resolve => {
             process.on("message", msg => {
-
-                // Save global blitz object in this new process
                 if (msg.type === "setGlobal") {
 
                     // Set global blitz from parent process
@@ -49,21 +47,30 @@ class Util {
                     blitz.log = eval("new " + blitz.log.class + "()")
                     resolve()
                 }
-
-                // Function is being called
-                if (msg.type === "call") {
-                    msg.value.args = this.deserialize(msg.value.args)
-                    let args = []
-
-                    // Convert args obj to array
-                    for(let i in msg.value.args) {
-                        args.push(msg.value.args[i])
-                    }
-
-                    // Call target function & return if function returns value
-                    node[msg.value.method].apply(node, args)
-                }
             })
+        })
+    }
+
+
+    /**
+     * Create Interface for global blitz object on parent and child
+     */
+    expose(node) {
+        process.on("message", msg => {
+
+            // Function is being called
+            if (msg.type === "call") {
+                msg.value.args = this.deserialize(msg.value.args)
+                let args = []
+
+                // Convert args obj to array
+                for (let i in msg.value.args) {
+                    args.push(msg.value.args[i])
+                }
+
+                // Call target function & return if function returns value
+                node[msg.value.method].apply(node, args)
+            }
         })
     }
 
