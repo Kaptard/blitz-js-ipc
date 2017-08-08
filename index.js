@@ -41,7 +41,7 @@ class Util {
                 if (msg.type === "setGlobal") {
 
                     // Set global blitz from parent process
-                    global.blitz = this.deserialize(msg.data)
+                    global.blitz = this.deserialize(msg.body)
 
                     // Create new logger from class
                     blitz.log = eval("new " + blitz.log.class + "()")
@@ -56,20 +56,37 @@ class Util {
      * Create Interface for global blitz object on parent and child
      */
     expose(node) {
-        process.on("message", msg => {
+        process.on("message", async msg => {
 
             // Function is being called
             if (msg.type === "call") {
-                msg.value.args = this.deserialize(msg.value.args)
+                msg.body.args = this.deserialize(msg.body.args)
                 let args = []
 
                 // Convert args obj to array
-                for (let i in msg.value.args) {
-                    args.push(msg.value.args[i])
+                for (let i in msg.body.args) {
+                    args.push(msg.body.args[i])
                 }
 
                 // Call target function & return if function returns value
-                node[msg.value.method].apply(node, args)
+                process.send({
+                    type: "return",
+                    body: {
+                        value: await node[msg.body.method].apply(node, args)
+                    }
+                })
+            }
+        })
+
+        // Respond to pings as soon as setup is complete
+        // Function calls won't be transmitted before successful ping
+        process.on("message", async msg => {
+            if (msg.type === "ping") {
+                await node.setup
+                process.send({
+                    type: "pong",
+                    body: {}
+                })
             }
         })
     }
@@ -80,16 +97,21 @@ class Util {
      */
     deserialize(obj) {
         return CircularJSON.parse(obj, (key, value) => {
-            if (typeof value != 'string') return value
+            try {
+                if (typeof value != 'string') return value
 
-            // Stringified function? (Not recommended)
-            if (value.substring(0, 8) == 'function' || value.includes(" => ")) {
-                return eval("(" + value + ")")
+                // Stringified function? (Not recommended)
+                if (value.substring(0, 8) == 'function' || value.includes(" => ")) {
+                    return eval("(" + value + ")")
+                }
+
+                // Primitive datatype
+                else {
+                    return value
+                }
             }
-
-            // Primitive datatype
-            else {
-                return value
+            catch (err) {
+                return undefined
             }
         })
     }
