@@ -44,7 +44,7 @@ class Util {
                     global.blitz = this.deserialize(msg.body)
 
                     // Create new logger from class
-                    blitz.log = eval("new " + blitz.log.class + "()")
+                    blitz.log = new(require(blitz.log.path))
                     resolve()
                 }
             })
@@ -76,17 +76,28 @@ class Util {
                     }
                 })
             }
-        })
 
-        // Respond to pings as soon as setup is complete
-        // Function calls won't be transmitted before successful ping
-        process.on("message", async msg => {
+            // Respond to pings as soon as setup is complete
+            // Function calls won't be transmitted before successful ping
             if (msg.type === "ping") {
                 await node.setup
                 process.send({
                     type: "pong",
                     body: {}
                 })
+            }
+
+            // Listen to incoming eval instructions
+            // Usually used for dynamically changing blitz.config
+            if (msg.type === "eval") {
+                let res = await eval(msg.body)
+                process.send({
+                    type: "eval'd",
+                    body: res
+                })
+
+                // Send to sub workers of current node if this is a host
+                blitz.setWorkerConfig ? blitz.setWorkerConfig(msg.body) : null
             }
         })
     }
