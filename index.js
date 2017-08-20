@@ -72,6 +72,7 @@ class Util {
                 process.send({
                     type: "return",
                     body: {
+                        method: msg.body.method,
                         value: await node[msg.body.method].apply(node, args)
                     }
                 })
