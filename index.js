@@ -80,19 +80,6 @@ class Util {
           body: {}
         })
       }
-
-      // Listen to incoming eval instructions
-      // Usually used for dynamically changing blitz.config
-      if (msg.type === 'eval') {
-        let res = await eval(msg.body)
-        process.send({
-          type: "eval'd",
-          body: res
-        })
-
-        // Send to sub workers of current node if this is a host
-        blitz.setWorkerConfig ? blitz.setWorkerConfig(msg.body) : null
-      }
     })
   }
 
