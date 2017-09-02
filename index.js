@@ -7,7 +7,7 @@ const chalk = require('chalk')
 /**
  * Auxiliary Class for setting up blitz.js
  */
-class Util {
+class IPC {
   /**
    * Set up uncaughtException listener for each worker
    */
@@ -107,4 +107,4 @@ class Util {
   }
 }
 
-module.exports = new Util()
+module.exports = new IPC()
