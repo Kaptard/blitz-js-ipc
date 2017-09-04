@@ -13,19 +13,26 @@ class IPC {
    */
   constructor () {
     process.on('uncaughtException', err => {
-      if (blitz.config.local.environment.toLowerCase() === 'production') {
-        console.error(err)
-      } else {
-        throw err
-      }
+      this.throwSafely(err)
     })
     process.on('unhandledRejection', err => {
+      this.throwSafely(err)
+    })
+  }
+
+  /**
+   * Throw errors only in development or if the error occured pre-boot
+   */
+  throwSafely(err) {
+    try {
       if (blitz.config.local.environment.toLowerCase() === 'production') {
         console.error(err)
       } else {
         throw err
       }
-    })
+    } catch (err) {
+      throw err
+    }
   }
 
   /**
