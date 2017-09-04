@@ -30,7 +30,7 @@ class IPC {
       } else {
         throw err
       }
-    } catch (err) {
+    } catch (e) {
       throw err
     }
   }
