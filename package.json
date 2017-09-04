@@ -1,6 +1,6 @@
 {
   "name": "blitz-js-ipc",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Inter Process Communication for blitz-js modules",
   "main": "index.js",
   "scripts": {
