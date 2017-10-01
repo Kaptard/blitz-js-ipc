@@ -47,6 +47,12 @@ class IPC {
 
           // Create new logger from class
           blitz.log = new (require(blitz.log.path))()
+
+          // Set process environment accordingly
+          if (blitz.config.local.environment === 'production') {
+            process.env.NODE_ENV = 'production'
+          }
+          
           resolve()
         }
       })
